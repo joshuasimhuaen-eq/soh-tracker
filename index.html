@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strait of Hormuz — Vessel Crossings</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+  :root{
+    --bg:#ffffff;--bg2:#f8f9fa;--bg3:#f1f3f5;
+    --border:#e9ecef;--border2:#dee2e6;
+    --text:#1a1a2e;--text2:#6c757d;--text3:#adb5bd;
+    --accent:#1971c2;--accent-light:#e7f5ff;
+    --red:#e03131;--red-light:#fff5f5;
+    --green:#2f9e44;--green-light:#ebfbee;
+    --orange:#e8590c;--orange-light:#fff4e6;
+    --yellow:#f08c00;
+    --crude:#e67700;--cpp:#7048e8;--dpp:#c2255c;
+    --lpg:#0ca678;--lng:#1971c2;--dry:#5c7cfa;--chem:#e64980;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:13px;min-height:100vh;}
+
+  /* ── Header ── */
+  header{background:var(--bg);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+  .header-left{display:flex;align-items:center;gap:20px;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-icon{width:28px;height:28px;background:var(--accent);display:flex;align-items:center;justify-content:center;border-radius:4px;}
+  .brand-icon svg{width:16px;height:16px;fill:white;}
+  .brand-name{font-size:14px;font-weight:600;color:var(--text);letter-spacing:-.01em;}
+  .brand-sub{font-size:11px;color:var(--text2);margin-top:1px;}
+  .divider-v{width:1px;height:24px;background:var(--border2);}
+  .war-pill{display:flex;align-items:center;gap:6px;background:var(--red-light);border:1px solid #ffc9c9;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;color:var(--red);}
+  .war-dot{width:6px;height:6px;background:var(--red);border-radius:50%;animation:pulse 1.5s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+  .header-stats{display:flex;gap:28px;align-items:center;}
+  .hstat{text-align:right;}
+  .hstat .v{font-size:16px;font-weight:600;color:var(--text);font-family:'JetBrains Mono',monospace;line-height:1;}
+  .hstat .l{font-size:10px;color:var(--text2);margin-top:2px;text-transform:uppercase;letter-spacing:.04em;}
+  .hstat.red .v{color:var(--red);}
+
+  /* ── Layout ── */
+  .main{display:grid;grid-template-columns:240px 1fr;height:calc(100vh - 56px);}
+
+  /* ── Sidebar ── */
+  .sidebar{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+  .sidebar-scroll{flex:1;overflow-y:auto;}
+  .sidebar-scroll::-webkit-scrollbar{width:3px;}
+  .sidebar-scroll::-webkit-scrollbar-thumb{background:var(--border2);}
+  .sb-section{padding:16px;border-bottom:1px solid var(--border);}
+  .sb-label{font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+  .btn-group{display:flex;flex-wrap:wrap;gap:4px;}
+  .btn-f{background:var(--bg);border:1px solid var(--border2);color:var(--text2);padding:4px 9px;font-size:11px;font-family:'Inter',sans-serif;cursor:pointer;border-radius:4px;transition:all .15s;font-weight:400;}
+  .btn-f:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-f.active{background:var(--accent-light);border-color:var(--accent);color:var(--accent);font-weight:500;}
+  .btn-f.active-red{background:var(--red-light);border-color:#ffc9c9;color:var(--red);font-weight:500;}
+  .search-wrap{position:relative;}
+  .search-wrap svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:13px;height:13px;stroke:var(--text3);fill:none;stroke-width:2;}
+  .search-box{background:var(--bg);border:1px solid var(--border2);color:var(--text);padding:7px 9px 7px 28px;font-size:12px;font-family:'Inter',sans-serif;width:100%;outline:none;border-radius:4px;transition:border-color .15s;}
+  .search-box:focus{border-color:var(--accent);}
+  .search-box::placeholder{color:var(--text3);}
+  .cargo-item{display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 6px;border-radius:4px;transition:background .12s;}
+  .cargo-item:hover{background:var(--bg3);}
+  .cargo-item.active{background:var(--bg3);}
+  .cargo-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+  .cargo-name{font-size:11px;color:var(--text2);flex:1;}
+  .cargo-count{font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;}
+  .mini-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .mini-stat{background:var(--bg);border:1px solid var(--border);padding:10px;border-radius:6px;}
+  .mini-stat .v{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:500;color:var(--text);}
+  .mini-stat .l{font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+  .mini-stat.red .v{color:var(--red);}
+  .mini-stat.amber .v{color:var(--yellow);}
+  .bar-chart{display:flex;flex-direction:column;gap:5px;}
+  .bar-row{display:flex;align-items:center;gap:8px;}
+  .bar-date{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);width:56px;flex-shrink:0;}
+  .bar-outer{flex:1;height:8px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:2px;transition:width .4s ease;}
+  .bar-laden{background:#74c0fc;}
+  .bar-ballast{background:#ced4da;}
+  .bar-n{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);width:18px;text-align:right;flex-shrink:0;}
+
+  /* ── Table area ── */
+  .table-wrap{display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{background:var(--bg);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .sort-lbl{font-size:11px;color:var(--text2);white-space:nowrap;}
+  .sort-btn{background:var(--bg);border:1px solid var(--border2);color:var(--text2);padding:4px 10px;font-size:11px;font-family:'Inter',sans-serif;cursor:pointer;border-radius:4px;transition:all .15s;}
+  .sort-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .sort-btn.active{background:var(--accent-light);border-color:var(--accent);color:var(--accent);font-weight:500;}
+  .result-count{margin-left:auto;font-size:11px;color:var(--text2);}
+  .result-count span{color:var(--text);font-weight:600;}
+  .table-area{overflow-y:auto;flex:1;}
+  .table-area::-webkit-scrollbar{width:4px;}
+  .table-area::-webkit-scrollbar-thumb{background:var(--border2);}
+  table{width:100%;border-collapse:collapse;}
+  thead{position:sticky;top:0;z-index:10;background:var(--bg2);}
+  th{padding:10px 16px;text-align:left;font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;cursor:pointer;user-select:none;border-bottom:1px solid var(--border2);transition:color .15s;}
+  th:hover{color:var(--accent);}
+  tr.row{border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;}
+  tr.row:hover{background:var(--bg2);}
+  tr.row.iran-row{background:#fff9f9;}
+  tr.row.iran-row:hover{background:#fff0f0;}
+  tr.row.iran-row td:first-child{border-left:3px solid var(--red);}
+  tr.row.selected{background:var(--accent-light);}
+  tr.row.selected td:first-child{border-left:3px solid var(--accent);}
+  td{padding:10px 16px;vertical-align:middle;}
+  .vname{font-size:12px;font-weight:500;color:var(--text);}
+  .vname.iran{color:var(--red);}
+  .vimo{font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-top:1px;}
+  .dir-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:500;padding:3px 8px;border-radius:20px;white-space:nowrap;}
+  .dir-badge.out{background:var(--green-light);color:var(--green);}
+  .dir-badge.in{background:var(--orange-light);color:var(--orange);}
+  .cargo-badge{display:inline-block;font-size:10px;font-weight:500;padding:2px 7px;border-radius:3px;}
+  .load-badge{font-size:10px;font-weight:500;}
+  .load-badge.laden{color:var(--yellow);}
+  .load-badge.ballast{color:var(--text3);}
+  .load-badge.unknown{color:var(--text3);}
+  .date-cell{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);}
+  .dwt-cell{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);text-align:right;}
+  .type-pill{font-size:10px;color:var(--text2);background:var(--bg3);border:1px solid var(--border);padding:2px 7px;border-radius:3px;}
+  .flag-cell{font-size:11px;color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .iran-flag-badge{font-size:10px;font-weight:600;color:var(--red);background:var(--red-light);padding:2px 6px;border-radius:3px;white-space:nowrap;}
+  .empty-state{text-align:center;padding:80px 20px;color:var(--text3);font-size:13px;}
+  .empty-state p{margin-top:8px;font-size:12px;}
+
+  /* ── Detail panel ── */
+  .detail-overlay{display:none;position:fixed;right:0;top:56px;width:300px;height:calc(100vh - 56px);background:var(--bg);border-left:1px solid var(--border2);z-index:200;overflow-y:auto;box-shadow:-4px 0 20px rgba(0,0,0,.06);}
+  .detail-overlay.open{display:block;animation:slide-in .18s ease;}
+  @keyframes slide-in{from{transform:translateX(16px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+  .dp-header{padding:16px;border-bottom:1px solid var(--border);position:relative;}
+  .dp-vessel{font-size:15px;font-weight:600;color:var(--text);margin-bottom:2px;}
+  .dp-vessel.iran{color:var(--red);}
+  .dp-imo{font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;}
+  .dp-close{position:absolute;top:14px;right:14px;background:var(--bg3);border:none;color:var(--text2);width:24px;height:24px;font-size:14px;cursor:pointer;border-radius:4px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+  .dp-close:hover{background:var(--red-light);color:var(--red);}
+  .dp-body{padding:16px;}
+  .dp-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);}
+  .dp-row:last-child{border-bottom:none;}
+  .dp-key{font-size:11px;color:var(--text2);}
+  .dp-val{font-size:12px;font-weight:500;color:var(--text);text-align:right;}
+  .dp-val.blue{color:var(--accent);}
+  .dp-val.red{color:var(--red);}
+  .dp-val.amber{color:var(--yellow);}
+  .iran-alert{margin-bottom:14px;padding:10px 12px;background:var(--red-light);border:1px solid #ffc9c9;border-left:3px solid var(--red);border-radius:4px;}
+  .iran-alert .at{font-size:11px;font-weight:600;color:var(--red);margin-bottom:3px;}
+  .iran-alert .ab{font-size:11px;color:#c92a2a;line-height:1.5;}
+  .dp-filter-btn{background:var(--bg2);border:1px solid var(--border2);color:var(--text2);padding:7px 12px;font-family:'Inter',sans-serif;font-size:11px;cursor:pointer;width:100%;border-radius:4px;margin-top:14px;transition:all .15s;text-align:center;}
+  .dp-filter-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light);}
+  @media(max-width:900px){.hide-sm{display:none;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 17l6-8 5 6 3-4 4 6H3z"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">Strait of Hormuz</div>
+        <div class="brand-sub">Vessel Crossings · Kpler AIS · 16 Mar 2026 13:17 UTC</div>
+      </div>
+    </div>
+    <div class="divider-v"></div>
+    <div class="war-pill">
+      <div class="war-dot"></div>
+      US–Iran Conflict · Since 28 Feb 2026
+    </div>
+  </div>
+  <div class="header-stats">
+    <div class="hstat"><div class="v" id="hdr-total">—</div><div class="l">Total</div></div>
+    <div class="hstat red"><div class="v" id="hdr-iran">—</div><div class="l">Iran-Flagged</div></div>
+    <div class="hstat"><div class="v" id="hdr-laden">—</div><div class="l">Laden Exits</div></div>
+    <div class="hstat"><div class="v" id="hdr-dwt">—</div><div class="l">Total DWT (m)</div></div>
+  </div>
+</header>
+
+<div class="main">
+  <div class="sidebar">
+    <div class="sb-section">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" class="search-box" id="searchInput"
+               placeholder="Search vessel or IMO..." oninput="applyFilters()">
+      </div>
+    </div>
+    <div class="sidebar-scroll">
+      <div class="sb-section">
+        <div class="sb-label">Direction</div>
+        <div class="btn-group">
+          <button class="btn-f active" onclick="setFilter('dir','all',this)">All</button>
+          <button class="btn-f" onclick="setFilter('dir','out',this)">↗ Outbound</button>
+          <button class="btn-f" onclick="setFilter('dir','in',this)">↙ Inbound</button>
+        </div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-label">Loading State</div>
+        <div class="btn-group">
+          <button class="btn-f active" onclick="setFilter('load','all',this)">All</button>
+          <button class="btn-f" onclick="setFilter('load','laden',this)">Laden</button>
+          <button class="btn-f" onclick="setFilter('load','ballast',this)">Ballast</button>
+        </div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-label">Fleet Type</div>
+        <div class="btn-group">
+          <button class="btn-f active" onclick="setFilter('type','all',this)">All</button>
+          <button class="btn-f" onclick="setFilter('type','Liquids',this)">Liquids</button>
+          <button class="btn-f" onclick="setFilter('type','LPG',this)">LPG</button>
+          <button class="btn-f" onclick="setFilter('type','LNG',this)">LNG</button>
+          <button class="btn-f" onclick="setFilter('type','Dry',this)">Dry</button>
+        </div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-label">Flag</div>
+        <div class="btn-group">
+          <button class="btn-f active" onclick="setFilter('iran','all',this)">All</button>
+          <button class="btn-f" onclick="setFilter('iran','iran',this)">🇮🇷 Iran Only</button>
+          <button class="btn-f" onclick="setFilter('iran','non',this)">Non-Iran</button>
+        </div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-label">Cargo Type</div>
+        <div id="cargo-legend"></div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-label">Crossings by Date</div>
+        <div class="bar-chart" id="bar-chart"></div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-label">Filtered Summary</div>
+        <div class="mini-stats">
+          <div class="mini-stat"><div class="v" id="sv">—</div><div class="l">Vessels</div></div>
+          <div class="mini-stat red"><div class="v" id="si">—</div><div class="l">Iran-Flagged</div></div>
+          <div class="mini-stat amber"><div class="v" id="sl">—</div><div class="l">Laden</div></div>
+          <div class="mini-stat"><div class="v" id="sd">—</div><div class="l">Avg DWT k</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="topbar">
+      <span class="sort-lbl">Sort by</span>
+      <button class="sort-btn active" onclick="setSort('date',this)">Date</button>
+      <button class="sort-btn" onclick="setSort('vessel',this)">Vessel</button>
+      <button class="sort-btn" onclick="setSort('dwt',this)">DWT</button>
+      <button class="sort-btn" onclick="setSort('flag',this)">Flag</button>
+      <button class="sort-btn" onclick="setSort('cargo',this)">Cargo</button>
+      <div class="result-count"><span id="count-display">—</span> vessels</div>
+    </div>
+    <div class="table-area">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="setSort('vessel',null)">Vessel</th>
+            <th onclick="setSort('date',null)">Date</th>
+            <th onclick="setSort('dir',null)">Direction</th>
+            <th>Cargo</th>
+            <th>Loading</th>
+            <th onclick="setSort('flag',null)">Flag</th>
+            <th onclick="setSort('dwt',null)" class="hide-sm">DWT</th>
+            <th class="hide-sm">Type</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="detail-overlay" id="detailPanel">
+  <div class="dp-header">
+    <div class="dp-vessel" id="dp-name">—</div>
+    <div class="dp-imo" id="dp-imo">IMO —</div>
+    <button class="dp-close" onclick="closeDetail()">✕</button>
+  </div>
+  <div class="dp-body" id="dp-body"></div>
+</div>
+
+<script>
+const CARGO_COLORS = {
+  'Crude':    { bg:'#fff4e6', text:'#e67700' },
+  'CPP':      { bg:'#f3f0ff', text:'#7048e8' },
+  'DPP':      { bg:'#fff0f6', text:'#c2255c' },
+  'LPG':      { bg:'#e6fcf5', text:'#0ca678' },
+  'LNG':      { bg:'#e7f5ff', text:'#1971c2' },
+  'Dry Bulk': { bg:'#edf2ff', text:'#3b5bdb' },
+  'Chemicals':{ bg:'#fff0f6', text:'#e64980' },
+  '':         { bg:'#f1f3f5', text:'#868e96' }
+};
+const DATA = [{"vessel": "Nora", "imo": "9237539", "dwt": 298414, "build_year": 2002, "build_country": "Japan", "flag": "Iran (Islamic Republic of)", "direction": "West -> East", "date": "15/3/2026", "date_display": "15/3/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": true}, {"vessel": "World Courage", "imo": "9289740", "dwt": 46992, "build_year": 2005, "build_country": "South Korea", "flag": "Panama", "direction": "East -> West", "date": "15/3/2026", "date_display": "15/3/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Lorax", "imo": "9903413", "dwt": 109990, "build_year": 2022, "build_country": "Japan", "flag": "Bahamas", "direction": "West -> East", "date": "15/3/2026", "date_display": "15/3/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": false}, {"vessel": "Al Safa", "imo": "9222649", "dwt": 47087, "build_year": 2001, "build_country": "Japan", "flag": "Panama", "direction": "West -> East", "date": "14/3/2026", "date_display": "14/3/2026", "loading": "laden", "cargo": "DPP", "type": "Liquids", "iran": false}, {"vessel": "Smyrni", "imo": "9493779", "dwt": 149998, "build_year": 2011, "build_country": "China", "flag": "Liberia", "direction": "West -> East", "date": "3/12/2026", "date_display": "3/12/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": false}, {"vessel": "Serengeti", "imo": "9403554", "dwt": 74999, "build_year": 2009, "build_country": "South Korea", "flag": "Liberia", "direction": "East -> West", "date": "11/3/2026", "date_display": "11/3/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Breez", "imo": "9247778", "dwt": 47038, "build_year": 2002, "build_country": "Japan", "flag": "Palau", "direction": "East -> West", "date": "11/3/2026", "date_display": "11/3/2026", "loading": "laden", "cargo": "CPP", "type": "Liquids", "iran": false}, {"vessel": "Skywave", "imo": "9328716", "dwt": 302481, "build_year": 2005, "build_country": "Japan", "flag": "Palau", "direction": "West -> East", "date": "11/3/2026", "date_display": "11/3/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": false}, {"vessel": "Wen Yao", "imo": "9288095", "dwt": 298972, "build_year": 2005, "build_country": "Japan", "flag": "San Marino", "direction": "West -> East", "date": "11/3/2026", "date_display": "11/3/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": false}, {"vessel": "P. Aliki", "imo": "9460136", "dwt": 105304, "build_year": 2010, "build_country": "South Korea", "flag": "Marshall Islands", "direction": "West -> East", "date": "11/3/2026", "date_display": "11/3/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": false}, {"vessel": "Hasna", "imo": "9212917", "dwt": 299229, "build_year": 2003, "build_country": "South Korea", "flag": "Iran (Islamic Republic of)", "direction": "West -> East", "date": "10/3/2026", "date_display": "10/3/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": true}, {"vessel": "Herby", "imo": "9362059", "dwt": 317367, "build_year": 2008, "build_country": "South Korea", "flag": "Iran (Islamic Republic of)", "direction": "West -> East", "date": "10/3/2026", "date_display": "10/3/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": true}, {"vessel": "Sanmar Herald", "imo": "9330563", "dwt": 309000, "build_year": 2007, "build_country": "South Korea", "flag": "Greece", "direction": "West -> East", "date": "9/3/2026", "date_display": "9/3/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": false}, {"vessel": "Cume", "imo": "9379703", "dwt": 296068, "build_year": 2009, "build_country": "China", "flag": "Barbados", "direction": "West -> East", "date": "9/3/2026", "date_display": "9/3/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": false}, {"vessel": "Dalia", "imo": "9820324", "dwt": 49000, "build_year": 2018, "build_country": "South Korea", "flag": "Iran (Islamic Republic of)", "direction": "East -> West", "date": "8/3/2026", "date_display": "8/3/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": true}, {"vessel": "Felicity", "imo": "9183934", "dwt": 299990, "build_year": 2000, "build_country": "Japan", "flag": "Iran (Islamic Republic of)", "direction": "East -> West", "date": "8/3/2026", "date_display": "8/3/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": true}, {"vessel": "Parimal", "imo": "9308766", "dwt": 12887, "build_year": 2005, "build_country": "South Korea", "flag": "Palau", "direction": "West -> East", "date": "7/3/2026", "date_display": "7/3/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Amber", "imo": "9357406", "dwt": 317356, "build_year": 2008, "build_country": "South Korea", "flag": "Iran (Islamic Republic of)", "direction": "West -> East", "date": "6/3/2026", "date_display": "6/3/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": true}, {"vessel": "Shenlong", "imo": "9379210", "dwt": 159021, "build_year": 2009, "build_country": "China", "flag": "Liberia", "direction": "West -> East", "date": "6/3/2026", "date_display": "6/3/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": false}, {"vessel": "Torm Hermia", "imo": "9797993", "dwt": 114939, "build_year": 2018, "build_country": "China", "flag": "Singapore", "direction": "West -> East", "date": "5/3/2026", "date_display": "5/3/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Rajtilak", "imo": "9383340", "dwt": 6143, "build_year": 2007, "build_country": "China", "flag": "Cook Islands", "direction": "West -> East", "date": "5/3/2026", "date_display": "5/3/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Hilda I", "imo": "9357389", "dwt": 317367, "build_year": 2008, "build_country": "South Korea", "flag": "Iran (Islamic Republic of)", "direction": "West -> East", "date": "4/3/2026", "date_display": "4/3/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": true}, {"vessel": "Stark I", "imo": "9171450", "dwt": 159681, "build_year": 2000, "build_country": "South Korea", "flag": "Iran (Islamic Republic of)", "direction": "West -> East", "date": "4/3/2026", "date_display": "4/3/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": true}, {"vessel": "Celeste I", "imo": "9250488", "dwt": 45950, "build_year": 2003, "build_country": "South Korea", "flag": "Panama", "direction": "West -> East", "date": "4/3/2026", "date_display": "4/3/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Kavomaleas", "imo": "1042823", "dwt": 75000, "build_year": 2025, "build_country": "China", "flag": "Malta", "direction": "East -> West", "date": "4/3/2026", "date_display": "4/3/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Padmanabh", "imo": "9483774", "dwt": 5887, "build_year": 2009, "build_country": "China", "flag": "Cook Islands", "direction": "West -> East", "date": "4/3/2026", "date_display": "4/3/2026", "loading": "laden", "cargo": "DPP", "type": "Liquids", "iran": false}, {"vessel": "Jaya", "imo": "9410387", "dwt": 310084, "build_year": 2008, "build_country": "Japan", "flag": "Marshall Islands", "direction": "West -> East", "date": "3/3/2026", "date_display": "3/3/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": false}, {"vessel": "Silvia 1", "imo": "9172052", "dwt": 159711, "build_year": 2000, "build_country": "South Korea", "flag": "Iran (Islamic Republic of)", "direction": "West -> East", "date": "3/3/2026", "date_display": "3/3/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": true}, {"vessel": "Pola", "imo": "9493767", "dwt": 149996, "build_year": 2011, "build_country": "China", "flag": "Liberia", "direction": "East -> West", "date": "2/3/2026", "date_display": "2/3/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Puffin Two", "imo": "9438274", "dwt": 6981, "build_year": 2009, "build_country": "China", "flag": "Liberia", "direction": "East -> West", "date": "2/3/2026", "date_display": "2/3/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Athe Nova", "imo": "9188116", "dwt": 2915, "build_year": 1998, "build_country": "Japan", "flag": "Honduras", "direction": "West -> East", "date": "2/3/2026", "date_display": "2/3/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Shiva", "imo": "9427146", "dwt": 12000, "build_year": 2007, "build_country": "China", "flag": "Cook Islands", "direction": "West -> East", "date": "2/3/2026", "date_display": "2/3/2026", "loading": "laden", "cargo": "DPP", "type": "Liquids", "iran": false}, {"vessel": "Smyrni", "imo": "9493779", "dwt": 149998, "build_year": 2011, "build_country": "China", "flag": "Liberia", "direction": "East -> West", "date": "2/3/2026", "date_display": "2/3/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Kerala", "imo": "9390927", "dwt": 74964, "build_year": 2009, "build_country": "South Korea", "flag": "Liberia", "direction": "East -> West", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Dalia", "imo": "9820324", "dwt": 49000, "build_year": 2018, "build_country": "South Korea", "flag": "Iran (Islamic Republic of)", "direction": "West -> East", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "laden", "cargo": "DPP", "type": "Liquids", "iran": true}, {"vessel": "Songa Neptune", "imo": "9565766", "dwt": 19802, "build_year": 2012, "build_country": "Japan", "flag": "Marshall Islands", "direction": "West -> East", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "laden", "cargo": "Chemicals", "type": "Liquids", "iran": false}, {"vessel": "Divine Power", "imo": "9171357", "dwt": 44990, "build_year": 2000, "build_country": "Croatia", "flag": "Palau", "direction": "West -> East", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Capetan Andreas", "imo": "9284374", "dwt": 74045, "build_year": 2007, "build_country": "China", "flag": "Liberia", "direction": "West -> East", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "laden", "cargo": "CPP", "type": "Liquids", "iran": false}, {"vessel": "Chios", "imo": "7113375", "dwt": 3184, "build_year": 1971, "build_country": "Germany", "flag": "Comoros", "direction": "West -> East", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Loanna", "imo": "9251884", "dwt": 46764, "build_year": 2004, "build_country": "Croatia", "flag": "Palau", "direction": "East -> West", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Valor", "imo": "9258179", "dwt": 47199, "build_year": 2004, "build_country": "Russia", "flag": "Liberia", "direction": "West -> East", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Athina", "imo": "9389564", "dwt": 74999, "build_year": 2008, "build_country": "South Korea", "flag": "Liberia", "direction": "East -> West", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Nordic Pollux", "imo": "9239848", "dwt": 150103, "build_year": 2003, "build_country": "Japan", "flag": "Cayman Islands", "direction": "East -> West", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Torm Astrid", "imo": "9510682", "dwt": 49999, "build_year": 2012, "build_country": "China", "flag": "Denmark", "direction": "West -> East", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "laden", "cargo": "CPP", "type": "Liquids", "iran": false}, {"vessel": "New Vision", "imo": "9799202", "dwt": 307434, "build_year": 2019, "build_country": "China", "flag": "Hong Kong", "direction": "West -> East", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": false}, {"vessel": "Bow Summer", "imo": "9215270", "dwt": 49592, "build_year": 2005, "build_country": "Poland", "flag": "Norway", "direction": "West -> East", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Puffin Two", "imo": "9438274", "dwt": 6981, "build_year": 2009, "build_country": "China", "flag": "Liberia", "direction": "West -> East", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Sinopa", "imo": "9172038", "dwt": 159681, "build_year": 1999, "build_country": "South Korea", "flag": "Iran (Islamic Republic of)", "direction": "East -> West", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": true}, {"vessel": "Rudra", "imo": "9571064", "dwt": 5884, "build_year": 2011, "build_country": "China", "flag": "Palau", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Ocean Koi", "imo": "9255933", "dwt": 72768, "build_year": 2004, "build_country": "China", "flag": "Barbados", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "DPP", "type": "Liquids", "iran": false}, {"vessel": "Marathi", "imo": "9772357", "dwt": 149992, "build_year": 2018, "build_country": "China", "flag": "Malta", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Pk Marit", "imo": "9235464", "dwt": 22820, "build_year": 2001, "build_country": "Japan", "flag": "Cook Islands", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Trima", "imo": "9252072", "dwt": 47355, "build_year": 2002, "build_country": "Croatia", "flag": "Cook Islands", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Bentley", "imo": "9220914", "dwt": 42721, "build_year": 2001, "build_country": "South Korea", "flag": "Cook Islands", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "DPP", "type": "Liquids", "iran": false}, {"vessel": "Serifos", "imo": "9410399", "dwt": 309774, "build_year": 2009, "build_country": "Japan", "flag": "Liberia", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Dm Condor", "imo": "9441659", "dwt": 14583, "build_year": 2007, "build_country": "Japan", "flag": "Panama", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "Chemicals", "type": "Liquids", "iran": false}, {"vessel": "Tm Hai Ha 818", "imo": "9382499", "dwt": 16900, "build_year": 2011, "build_country": "China", "flag": "Viet Nam", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "CPP", "type": "Liquids", "iran": false}, {"vessel": "Estia", "imo": "9327035", "dwt": 73711, "build_year": 2007, "build_country": "China", "flag": "Bahamas", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Modeste", "imo": "9220938", "dwt": 42721, "build_year": 2001, "build_country": "South Korea", "flag": "Gambia", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Rudra", "imo": "9571064", "dwt": 5884, "build_year": 2011, "build_country": "China", "flag": "Palau", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Xin Long Yang", "imo": "9761463", "dwt": 308376, "build_year": 2017, "build_country": "China", "flag": "Singapore", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": false}, {"vessel": "Nissos Nikouria", "imo": "9920760", "dwt": 300323, "build_year": 2022, "build_country": "South Korea", "flag": "Marshall Islands", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": false}, {"vessel": "Selenia", "imo": "9286437", "dwt": 5765, "build_year": 2004, "build_country": "Turkey", "flag": "Panama", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Prince Ix", "imo": "9133599", "dwt": 4450, "build_year": 1995, "build_country": "Netherlands", "flag": "Panama", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Desh Abhimaan", "imo": "9326809", "dwt": 158710, "build_year": 2007, "build_country": "South Korea", "flag": "India", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "MADI", "imo": "9282625", "dwt": 72825, "build_year": 2005, "build_country": "China", "flag": "Bahamas", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "DPP", "type": "Liquids", "iran": false}, {"vessel": "Khk Empress", "imo": "9830965", "dwt": 314014, "build_year": 2019, "build_country": "South Korea", "flag": "Singapore", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": false}, {"vessel": "Pearl Kenzo", "imo": "9948346", "dwt": 7999, "build_year": 2023, "build_country": "China", "flag": "Singapore", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Eagle Vellore", "imo": "9933602", "dwt": 299554, "build_year": 2023, "build_country": "South Korea", "flag": "Malaysia", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": false}, {"vessel": "XARON", "imo": "9554834", "dwt": 7226, "build_year": 2010, "build_country": "China", "flag": "Panama", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Aegean Nobility", "imo": "9345441", "dwt": 115814, "build_year": 2007, "build_country": "South Korea", "flag": "Greece", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": false}, {"vessel": "The Diplomat", "imo": "9659672", "dwt": 30158, "build_year": 2014, "build_country": "South Korea", "flag": "Marshall Islands", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Star Line", "imo": "9237618", "dwt": 105716, "build_year": 2003, "build_country": "South Korea", "flag": "Panama", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Kashimasan", "imo": "9329863", "dwt": 306033, "build_year": 2007, "build_country": "Japan", "flag": "India", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": false}, {"vessel": "Palamas", "imo": "9938042", "dwt": 115462, "build_year": 2023, "build_country": "South Korea", "flag": "Malta", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Shalamar", "imo": "9336842", "dwt": 105315, "build_year": 2006, "build_country": "Japan", "flag": "Pakistan", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": false}, {"vessel": "Burri", "imo": "9787948", "dwt": 115019, "build_year": 2019, "build_country": "China", "flag": "Cayman Islands", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "CPP", "type": "Liquids", "iran": false}, {"vessel": "Mona", "imo": "9917880", "dwt": 54500, "build_year": 2022, "build_country": "South Korea", "flag": "Saudi Arabia", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Minerva Doxa", "imo": "9304617", "dwt": 159438, "build_year": 2007, "build_country": "Japan", "flag": "Greece", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Impalas", "imo": "9171448", "dwt": 299167, "build_year": 1999, "build_country": "South Korea", "flag": "Sao Tome and Principe", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": false}, {"vessel": "Berg 1", "imo": "9262168", "dwt": 299984, "build_year": 2004, "build_country": "Japan", "flag": "Panama", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": false}, {"vessel": "Sofia Ii", "imo": "9364239", "dwt": 105400, "build_year": 2008, "build_country": "Japan", "flag": "Liberia", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Fs Bitumen No. 2", "imo": "9796559", "dwt": 7769, "build_year": 2017, "build_country": "China", "flag": "Panama", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "DPP", "type": "Liquids", "iran": false}, {"vessel": "Al Maha", "imo": "9406740", "dwt": 4172, "build_year": 2006, "build_country": "China", "flag": "Panama", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "New Corolla", "imo": "9900679", "dwt": 307551, "build_year": 2021, "build_country": "China", "flag": "Hong Kong", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": false}, {"vessel": "Stallion", "imo": "9399478", "dwt": 157048, "build_year": 2009, "build_country": "China", "flag": "Bahamas", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Maymei", "imo": "9133082", "dwt": 44936, "build_year": 1997, "build_country": "South Korea", "flag": "Panama", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "Chemicals", "type": "Liquids", "iran": false}, {"vessel": "Shenlong", "imo": "9379210", "dwt": 159021, "build_year": 2009, "build_country": "China", "flag": "Liberia", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Palamas", "imo": "9938042", "dwt": 115462, "build_year": 2023, "build_country": "South Korea", "flag": "Malta", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Vesuvio", "imo": "9740330", "dwt": 297639, "build_year": 2017, "build_country": "Philippines", "flag": "Denmark", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": false}, {"vessel": "Pontus", "imo": "9511179", "dwt": 5752, "build_year": 2008, "build_country": "Japan", "flag": "Palau", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Loanna", "imo": "9239977", "dwt": 46764, "build_year": 2003, "build_country": "Croatia", "flag": "Saint Kitts and Nevis", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "Chemicals", "type": "Liquids", "iran": false}, {"vessel": "Monjasa Shipper", "imo": "9825025", "dwt": 7991, "build_year": 2018, "build_country": "China", "flag": "Liberia", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Marine Charge", "imo": "9956707", "dwt": 8286, "build_year": 2023, "build_country": "China", "flag": "Singapore", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Grand Bonanza", "imo": "9915569", "dwt": 299988, "build_year": 2021, "build_country": "South Korea", "flag": "Panama", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Ds Ocean", "imo": "9330587", "dwt": 19940, "build_year": 2007, "build_country": "Japan", "flag": "Korea, Republic of", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "C. Primacy", "imo": "9422160", "dwt": 316427, "build_year": 2010, "build_country": "South Korea", "flag": "Panama", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": false}, {"vessel": "Khk Empress", "imo": "9830965", "dwt": 314014, "build_year": 2019, "build_country": "South Korea", "flag": "Singapore", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "Crude", "type": "Liquids", "iran": false}, {"vessel": "Happy Camper", "imo": "9277773", "dwt": 74999, "build_year": 2004, "build_country": "South Korea", "flag": "Marshall Islands", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Mei Lin Wan", "imo": "9614074", "dwt": 109485, "build_year": 2012, "build_country": "China", "flag": "China", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "CPP", "type": "Liquids", "iran": false}, {"vessel": "M K A", "imo": "9269403", "dwt": 29524, "build_year": 2003, "build_country": "China", "flag": "Cook Islands", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Elka Apollon", "imo": "9299111", "dwt": 101970, "build_year": 2005, "build_country": "Croatia", "flag": "Liberia", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Rong Lin Wan", "imo": "9783423", "dwt": 109783, "build_year": 2017, "build_country": "China", "flag": "Singapore", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "CPP", "type": "Liquids", "iran": false}, {"vessel": "Dalia", "imo": "9322982", "dwt": 11316, "build_year": 2006, "build_country": "South Korea", "flag": "Panama", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Liquids", "iran": false}, {"vessel": "Nanda Devi", "imo": "9232503", "dwt": 53503, "build_year": 2001, "build_country": "Japan", "flag": "India", "direction": "West -> East", "date": "14/3/2026", "date_display": "14/3/2026", "loading": "laden", "cargo": "LPG", "type": "LPG", "iran": false}, {"vessel": "Shivalik", "imo": "9356892", "dwt": 53999, "build_year": 2008, "build_country": "South Korea", "flag": "India", "direction": "West -> East", "date": "14/3/2026", "date_display": "14/3/2026", "loading": "laden", "cargo": "LPG", "type": "LPG", "iran": false}, {"vessel": "Sea Hermes", "imo": "9031519", "dwt": 49242, "build_year": 1993, "build_country": "Japan", "flag": "Palau", "direction": "West -> East", "date": "10/3/2026", "date_display": "10/3/2026", "loading": "laden", "cargo": "LPG", "type": "LPG", "iran": false}, {"vessel": "Danuta I", "imo": "9193721", "dwt": 56824, "build_year": 2000, "build_country": "Poland", "flag": "Cook Islands", "direction": "West -> East", "date": "6/3/2026", "date_display": "6/3/2026", "loading": "laden", "cargo": "LPG", "type": "LPG", "iran": false}, {"vessel": "Pamir", "imo": "9208239", "dwt": 54800, "build_year": 2001, "build_country": "Japan", "flag": "Panama", "direction": "West -> East", "date": "4/3/2026", "date_display": "4/3/2026", "loading": "laden", "cargo": "LPG", "type": "LPG", "iran": false}, {"vessel": "Hh Glory", "imo": "9534614", "dwt": 54867, "build_year": 2011, "build_country": "Japan", "flag": "Panama", "direction": "West -> East", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "laden", "cargo": "LPG", "type": "LPG", "iran": false}, {"vessel": "Bogazici", "imo": "9237747", "dwt": 26616, "build_year": 2002, "build_country": "South Korea", "flag": "Panama", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "LPG", "type": "LPG", "iran": false}, {"vessel": "Navigator Leo", "imo": "9482574", "dwt": 22844, "build_year": 2011, "build_country": "South Korea", "flag": "Liberia", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "LPG", "type": "LPG", "iran": false}, {"vessel": "Epic Sentosa", "imo": "9733533", "dwt": 9052, "build_year": 2016, "build_country": "Japan", "flag": "Singapore", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "LPG", "iran": false}, {"vessel": "Berge Nantong", "imo": "9317987", "dwt": 58757, "build_year": 2006, "build_country": "South Korea", "flag": "Hong Kong", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "LPG", "type": "LPG", "iran": false}, {"vessel": "Ullswater", "imo": "9139945", "dwt": 7678, "build_year": 1996, "build_country": "Japan", "flag": "Panama", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "LPG", "type": "LPG", "iran": false}, {"vessel": "Green Asha", "imo": "9326598", "dwt": 26424, "build_year": 2007, "build_country": "South Korea", "flag": "India", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "LPG", "iran": false}, {"vessel": "Gaslog Shanghai", "imo": "9600528", "dwt": 82104, "build_year": 2013, "build_country": "South Korea", "flag": "Bermuda", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "LNG", "type": "LNG", "iran": false}, {"vessel": "Disha", "imo": "9250713", "dwt": 81097, "build_year": 2004, "build_country": "South Korea", "flag": "Malta", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "LNG", "iran": false}, {"vessel": "Lebrethah", "imo": "9976927", "dwt": 95000, "build_year": 2025, "build_country": "South Korea", "flag": "Liberia", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "LNG", "iran": false}, {"vessel": "Anthea", "imo": "9317729", "dwt": 76781, "build_year": 2006, "build_country": "Japan", "flag": "Marshall Islands", "direction": "West -> East", "date": "16/3/2026", "date_display": "16/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Minoan Sky", "imo": "9422328", "dwt": 75118, "build_year": 2008, "build_country": "China", "flag": "Liberia", "direction": "West -> East", "date": "15/3/2026", "date_display": "15/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Star Gwyneth", "imo": "9301031", "dwt": 82790, "build_year": 2006, "build_country": "Japan", "flag": "Marshall Islands", "direction": "West -> East", "date": "15/3/2026", "date_display": "15/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Oura", "imo": "9387815", "dwt": 62921, "build_year": 2009, "build_country": "China", "flag": "Iran (Islamic Republic of)", "direction": "East -> West", "date": "13/3/2026", "date_display": "13/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": true}, {"vessel": "Minoan Dignity", "imo": "9294484", "dwt": 76801, "build_year": 2004, "build_country": "Japan", "flag": "Liberia", "direction": "West -> East", "date": "12/3/2026", "date_display": "12/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Mayuree Naree", "imo": "9323649", "dwt": 30197, "build_year": 2208, "build_country": "India", "flag": "Thailand", "direction": "East -> West", "date": "11/3/2026", "date_display": "11/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Star Maria", "imo": "9401489", "dwt": 82191, "build_year": 2007, "build_country": "Japan", "flag": "Marshall Islands", "direction": "West -> East", "date": "11/3/2026", "date_display": "11/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Ksl Laiyang", "imo": "9555163", "dwt": 56617, "build_year": 2011, "build_country": "China", "flag": "Marshall Islands", "direction": "West -> East", "date": "11/3/2026", "date_display": "11/3/2026", "loading": "laden", "cargo": "Dry Bulk", "type": "Dry", "iran": false}, {"vessel": "Honestar", "imo": "9187368", "dwt": 48913, "build_year": 1999, "build_country": "Japan", "flag": "Panama", "direction": "West -> East", "date": "10/3/2026", "date_display": "10/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Run Chen 2", "imo": "9611618", "dwt": 32709, "build_year": 2011, "build_country": "China", "flag": "China", "direction": "West -> East", "date": "10/3/2026", "date_display": "10/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Broad Rich", "imo": "9285562", "dwt": 77598, "build_year": 2004, "build_country": "Taiwan", "flag": "Panama", "direction": "West -> East", "date": "10/3/2026", "date_display": "10/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Yara J", "imo": "9118147", "dwt": 34167, "build_year": 1997, "build_country": "China", "flag": "Saint Kitts and Nevis", "direction": "East -> West", "date": "9/3/2026", "date_display": "9/3/2026", "loading": "laden", "cargo": "Dry Bulk", "type": "Dry", "iran": false}, {"vessel": "Rozana", "imo": "9198381", "dwt": 45572, "build_year": 2000, "build_country": "Philippines", "flag": "Belize", "direction": "West -> East", "date": "8/3/2026", "date_display": "8/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Ksl Hengyang", "imo": "9333931", "dwt": 53395, "build_year": 2007, "build_country": "China", "flag": "Marshall Islands", "direction": "West -> East", "date": "8/3/2026", "date_display": "8/3/2026", "loading": "laden", "cargo": "Dry Bulk", "type": "Dry", "iran": false}, {"vessel": "Parshad", "imo": "9387786", "dwt": 53500, "build_year": 2008, "build_country": "China", "flag": "Iran (Islamic Republic of)", "direction": "West -> East", "date": "7/3/2026", "date_display": "7/3/2026", "loading": "laden", "cargo": "Dry Bulk", "type": "Dry", "iran": true}, {"vessel": "Sino Ocean", "imo": "9222338", "dwt": 53733, "build_year": 2002, "build_country": "China", "flag": "Liberia", "direction": "West -> East", "date": "7/3/2026", "date_display": "7/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Iolcos Fighter", "imo": "9664964", "dwt": 76102, "build_year": 2014, "build_country": "China", "flag": "Malta", "direction": "West -> East", "date": "7/3/2026", "date_display": "7/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Iron Maiden", "imo": "9691149", "dwt": 36371, "build_year": 2014, "build_country": "Japan", "flag": "Marshall Islands", "direction": "West -> East", "date": "5/3/2026", "date_display": "5/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Parisan", "imo": "9465851", "dwt": 53100, "build_year": 2009, "build_country": "China", "flag": "Iran (Islamic Republic of)", "direction": "West -> East", "date": "5/3/2026", "date_display": "5/3/2026", "loading": "laden", "cargo": "Dry Bulk", "type": "Dry", "iran": true}, {"vessel": "Al Watan", "imo": "9615030", "dwt": 28214, "build_year": 2012, "build_country": "Japan", "flag": "Panama", "direction": "West -> East", "date": "4/3/2026", "date_display": "4/3/2026", "loading": "laden", "cargo": "Dry Bulk", "type": "Dry", "iran": false}, {"vessel": "Mls Onyx", "imo": "9373618", "dwt": 53393, "build_year": 2006, "build_country": "China", "flag": "Panama", "direction": "East -> West", "date": "4/3/2026", "date_display": "4/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Galaxy Globe", "imo": "9723629", "dwt": 81167, "build_year": 2015, "build_country": "China", "flag": "Marshall Islands", "direction": "West -> East", "date": "3/3/2026", "date_display": "3/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Victoria", "imo": "9336828", "dwt": 50223, "build_year": 2006, "build_country": "Indonesia", "flag": "Liberia", "direction": "East -> West", "date": "2/3/2026", "date_display": "2/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Union Trader", "imo": "9989314", "dwt": 40552, "build_year": 2024, "build_country": "China", "flag": "Philippines", "direction": "West -> East", "date": "2/3/2026", "date_display": "2/3/2026", "loading": "laden", "cargo": "Dry Bulk", "type": "Dry", "iran": false}, {"vessel": "Lady Ayana", "imo": "9196395", "dwt": 27797, "build_year": 1999, "build_country": "Japan", "flag": "Barbados", "direction": "West -> East", "date": "2/3/2026", "date_display": "2/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Mahnam", "imo": "9213387", "dwt": 75245, "build_year": 2001, "build_country": "South Korea", "flag": "Iran (Islamic Republic of)", "direction": "West -> East", "date": "2/3/2026", "date_display": "2/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": true}, {"vessel": "Jin Hai Wo", "imo": "1043839", "dwt": 63864, "build_year": 2025, "build_country": "China", "flag": "China", "direction": "West -> East", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "laden", "cargo": "Dry Bulk", "type": "Dry", "iran": false}, {"vessel": "V Bravo", "imo": "9598713", "dwt": 56659, "build_year": 2012, "build_country": "China", "flag": "Panama", "direction": "West -> East", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Saraca", "imo": "9300764", "dwt": 37832, "build_year": 2017, "build_country": "Japan", "flag": "nan", "direction": "East -> West", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Bunun Miracle", "imo": "9867372", "dwt": 37655, "build_year": 2020, "build_country": "Japan", "flag": "Panama", "direction": "East -> West", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Anastasiia", "imo": "9349291", "dwt": 12744, "build_year": 2017, "build_country": "China", "flag": "nan", "direction": "West -> East", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Corelit", "imo": "9573799", "dwt": 28189, "build_year": 2010, "build_country": "Japan", "flag": "Barbados", "direction": "West -> East", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Yasa Unsal Sunar", "imo": "9396206", "dwt": 55526, "build_year": 2007, "build_country": "Japan", "flag": "Marshall Islands", "direction": "West -> East", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Gloria Del Mare", "imo": "1016769", "dwt": 63300, "build_year": 2025, "build_country": "Philippines", "flag": "Liberia", "direction": "West -> East", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "laden", "cargo": "Dry Bulk", "type": "Dry", "iran": false}, {"vessel": "Industrial Ruby", "imo": "9277292", "dwt": 10538, "build_year": 2010, "build_country": "Netherlands", "flag": "nan", "direction": "West -> East", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Jal Kundan", "imo": "9990363", "dwt": 65950, "build_year": 2025, "build_country": "China", "flag": "Singapore", "direction": "West -> East", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "laden", "cargo": "Dry Bulk", "type": "Dry", "iran": false}, {"vessel": "Lyric Poet", "imo": "9590577", "dwt": 81276, "build_year": 2012, "build_country": "South Korea", "flag": "Portugal", "direction": "West -> East", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Newsun", "imo": "9218301", "dwt": 31877, "build_year": 2000, "build_country": "Japan", "flag": "Sao Tome and Principe", "direction": "West -> East", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Majesty", "imo": "9181027", "dwt": 46667, "build_year": 1999, "build_country": "Japan", "flag": "Panama", "direction": "West -> East", "date": "1/3/2026", "date_display": "1/3/2026", "loading": "laden", "cargo": "Dry Bulk", "type": "Dry", "iran": false}, {"vessel": "Silver Peace", "imo": "9607655", "dwt": 12267, "build_year": 2011, "build_country": "China", "flag": "Panama", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Propel Success", "imo": "9640607", "dwt": 58665, "build_year": 2012, "build_country": "Japan", "flag": "Singapore", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Star Altair", "imo": "9828314", "dwt": 81600, "build_year": 2019, "build_country": "China", "flag": "Bahamas", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "Dry Bulk", "type": "Dry", "iran": false}, {"vessel": "Stellina", "imo": "9674933", "dwt": 26052, "build_year": 2014, "build_country": "Turkey", "flag": "Liberia", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Cape Trader", "imo": "9469962", "dwt": 169237, "build_year": 2008, "build_country": "South Korea", "flag": "Liberia", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "Dry Bulk", "type": "Dry", "iran": false}, {"vessel": "Abdali", "imo": "9294472", "dwt": 76801, "build_year": 2004, "build_country": "Japan", "flag": "Liberia", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Anthemis", "imo": "9587441", "dwt": 93291, "build_year": 2011, "build_country": "China", "flag": "Liberia", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Chang Hang Hui Hai", "imo": "9436109", "dwt": 57066, "build_year": 2010, "build_country": "China", "flag": "China", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "East King", "imo": "9204685", "dwt": 75681, "build_year": 2000, "build_country": "Japan", "flag": "Panama", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Ghousta", "imo": "9254836", "dwt": 50339, "build_year": 2002, "build_country": "Japan", "flag": "Panama", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Hao Yun", "imo": "9205914", "dwt": 48220, "build_year": 2000, "build_country": "Japan", "flag": "Liberia", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Jns Harmony", "imo": "1061532", "dwt": 40500, "build_year": 2025, "build_country": "China", "flag": "Hong Kong", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Lila Fuji", "imo": "9658680", "dwt": 82938, "build_year": 2013, "build_country": "Japan", "flag": "Liberia", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "Dry Bulk", "type": "Dry", "iran": false}, {"vessel": "Lucky Finder", "imo": "9393620", "dwt": 37268, "build_year": 2009, "build_country": "Japan", "flag": "Marshall Islands", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "Dry Bulk", "type": "Dry", "iran": false}, {"vessel": "Mayuree Naree", "imo": "9323649", "dwt": 30197, "build_year": 2008, "build_country": "India", "flag": "Thailand", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Nada", "imo": "9197088", "dwt": 24993, "build_year": 1999, "build_country": "Japan", "flag": "Saint Kitts and Nevis", "direction": "East -> West", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "New Legend", "imo": "9562037", "dwt": 93079, "build_year": 2012, "build_country": "China", "flag": "Hong Kong", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}, {"vessel": "Odysseus N", "imo": "9490442", "dwt": 79641, "build_year": 2011, "build_country": "China", "flag": "Marshall Islands", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "laden", "cargo": "Dry Bulk", "type": "Dry", "iran": false}, {"vessel": "Panopi", "imo": "9554183", "dwt": 88299, "build_year": 2010, "build_country": "Japan", "flag": "Liberia", "direction": "West -> East", "date": "28/2/2026", "date_display": "28/2/2026", "loading": "ballast", "cargo": "", "type": "Dry", "iran": false}];
+
+let filters = { dir:'all', load:'all', type:'all', iran:'all', cargo:'all' };
+let sortKey = 'date', sortDir = -1, selData = null;
+
+function gc(c){ return CARGO_COLORS[c] || CARGO_COLORS['']; }
+function isOut(d){ return d.direction === 'West -> East'; }
+
+function parseDate(s){
+  if(!s) return new Date(0);
+  const p = s.toString().split('/');
+  if(p.length === 3) return new Date(parseInt(p[2]), parseInt(p[1])-1, parseInt(p[0]));
+  return new Date(s);
+}
+
+function getFiltered(){
+  const s = document.getElementById('searchInput').value.toLowerCase();
+  return DATA.filter(d => {
+    if(filters.dir   === 'out'     && !isOut(d))               return false;
+    if(filters.dir   === 'in'      &&  isOut(d))               return false;
+    if(filters.load  === 'laden'   && d.loading !== 'laden')   return false;
+    if(filters.load  === 'ballast' && d.loading !== 'ballast') return false;
+    if(filters.type  !== 'all'     && d.type    !== filters.type)  return false;
+    if(filters.iran  === 'iran'    && !d.iran)                 return false;
+    if(filters.iran  === 'non'     &&  d.iran)                 return false;
+    if(filters.cargo !== 'all'     && d.cargo   !== filters.cargo) return false;
+    if(s && !d.vessel.toLowerCase().includes(s) && !d.imo.includes(s)) return false;
+    return true;
+  });
+}
+
+function getSorted(arr){
+  return [...arr].sort((a, b) => {
+    if(sortKey === 'date') return sortDir * (parseDate(a.date) - parseDate(b.date));
+    let av, bv;
+    if     (sortKey==='vessel'){ av=a.vessel.toLowerCase(); bv=b.vessel.toLowerCase(); }
+    else if(sortKey==='dwt')   { av=a.dwt;                 bv=b.dwt; }
+    else if(sortKey==='flag')  { av=a.flag.toLowerCase();  bv=b.flag.toLowerCase(); }
+    else if(sortKey==='cargo') { av=a.cargo;               bv=b.cargo; }
+    else if(sortKey==='dir')   { av=a.direction;           bv=b.direction; }
+    if(av < bv) return  sortDir;
+    if(av > bv) return -sortDir;
+    return 0;
+  });
+}
+
+function fDWT(n){ return n ? (n/1000).toFixed(0)+'k' : '—'; }
+
+function cBadge(c){
+  if(!c) return '<span style="color:#adb5bd;font-size:11px">—</span>';
+  const col = gc(c);
+  return `<span class="cargo-badge" style="background:${col.bg};color:${col.text}">${c}</span>`;
+}
+
+function render(){
+  const filtered = getFiltered();
+  const sorted   = getSorted(filtered);
+
+  document.getElementById('hdr-total').textContent = DATA.length;
+  document.getElementById('hdr-iran').textContent  = DATA.filter(d=>d.iran).length;
+  document.getElementById('hdr-laden').textContent = DATA.filter(d=>d.loading==='laden'&&isOut(d)).length;
+  document.getElementById('hdr-dwt').textContent   = (DATA.reduce((s,d)=>s+d.dwt,0)/1e6).toFixed(1)+'m';
+
+  document.getElementById('sv').textContent = filtered.length;
+  document.getElementById('si').textContent = filtered.filter(d=>d.iran).length;
+  document.getElementById('sl').textContent = filtered.filter(d=>d.loading==='laden').length;
+  const avg = filtered.length
+    ? Math.round(filtered.reduce((s,d)=>s+d.dwt,0)/filtered.length/1000) : 0;
+  document.getElementById('sd').textContent = avg+'k';
+  document.getElementById('count-display').textContent = sorted.length;
+
+  const tbody = document.getElementById('tableBody');
+  if(!sorted.length){
+    tbody.innerHTML = `<tr><td colspan="8">
+      <div class="empty-state">No vessels match your filters
+        <p>Try adjusting the sidebar filters</p>
+      </div></td></tr>`;
+  } else {
+    tbody.innerHTML = sorted.map(d => {
+      const out = isOut(d);
+      const sel = selData && selData.imo===d.imo && selData.date===d.date;
+      return `<tr class="row${d.iran?' iran-row':''}${sel?' selected':''}"
+                  onclick='showDetail(${JSON.stringify(d)})'>
+        <td>
+          <div class="vname${d.iran?' iran':''}">${d.vessel}</div>
+          <div class="vimo">${d.imo}</div>
+        </td>
+        <td class="date-cell">${d.date_display}</td>
+        <td><span class="dir-badge ${out?'out':'in'}">${out?'↗ Outbound':'↙ Inbound'}</span></td>
+        <td>${cBadge(d.cargo)}</td>
+        <td><span class="load-badge ${d.loading}">${d.loading}</span></td>
+        <td class="flag-cell">${d.iran?'<span class="iran-flag-badge">🇮🇷 Iran</span>':d.flag}</td>
+        <td class="dwt-cell hide-sm">${fDWT(d.dwt)}</td>
+        <td class="hide-sm"><span class="type-pill">${d.type}</span></td>
+      </tr>`;
+    }).join('');
+  }
+
+  const cm = {};
+  filtered.forEach(d=>{ const k=d.cargo||'(ballast)'; cm[k]=(cm[k]||0)+1; });
+  document.getElementById('cargo-legend').innerHTML = Object.entries(cm)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([c,n])=>{
+      const col = c==='(ballast)' ? {bg:'#f1f3f5',text:'#868e96'} : gc(c);
+      return `<div class="cargo-item${filters.cargo===c?' active':''}"
+                   onclick="toggleCargo('${c}')">
+        <div class="cargo-dot" style="background:${col.text}"></div>
+        <div class="cargo-name">${c}</div>
+        <div class="cargo-count">${n}</div>
+      </div>`;
+    }).join('');
+
+  const dc = {};
+  filtered.forEach(d=>{ dc[d.date]=(dc[d.date]||0)+1; });
+  const dates = Object.keys(dc)
+    .sort((a,b) => parseDate(b) - parseDate(a))
+    .slice(0,14);
+  const mx = Math.max(...dates.map(d=>dc[d]), 1);
+  document.getElementById('bar-chart').innerHTML = dates.map(dt=>{
+    const n   = dc[dt];
+    const pct = (n/mx*100).toFixed(1);
+    const hasLaden = filtered.some(d=>d.date===dt&&d.loading==='laden');
+    return `<div class="bar-row">
+      <div class="bar-date">${dt}</div>
+      <div class="bar-outer">
+        <div class="bar-fill ${hasLaden?'bar-laden':'bar-ballast'}" style="width:${pct}%"></div>
+      </div>
+      <div class="bar-n">${n}</div>
+    </div>`;
+  }).join('');
+}
+
+function showDetail(d){
+  selData = d;
+  const col = gc(d.cargo);
+  const out = isOut(d);
+  document.getElementById('dp-name').textContent = d.vessel;
+  document.getElementById('dp-name').className   = 'dp-vessel'+(d.iran?' iran':'');
+  document.getElementById('dp-imo').textContent  = d.imo;
+  document.getElementById('dp-body').innerHTML = `
+    ${d.iran?`<div class="iran-alert">
+      <div class="at">⚑ Iran-Flagged Vessel</div>
+      <div class="ab">Sanctions risk — monitor for potential disruption linkage and compliance exposure.</div>
+    </div>`:''}
+    <div class="dp-row"><div class="dp-key">Crossing Date</div><div class="dp-val blue">${d.date_display}</div></div>
+    <div class="dp-row"><div class="dp-key">Direction</div><div class="dp-val">${out?'↗ Outbound':'↙ Inbound'}</div></div>
+    <div class="dp-row"><div class="dp-key">Loading State</div><div class="dp-val ${d.loading==='laden'?'amber':''}">${d.loading}</div></div>
+    <div class="dp-row"><div class="dp-key">Cargo Type</div><div class="dp-val" style="color:${col.text}">${d.cargo||'—'}</div></div>
+    <div class="dp-row"><div class="dp-key">Fleet Type</div><div class="dp-val">${d.type}</div></div>
+    <div class="dp-row"><div class="dp-key">Deadweight</div><div class="dp-val">${d.dwt?d.dwt.toLocaleString()+' DWT':'—'}</div></div>
+    <div class="dp-row"><div class="dp-key">Flag State</div><div class="dp-val ${d.iran?'red':''}">${d.flag||'—'}</div></div>
+    <div class="dp-row"><div class="dp-key">Built</div><div class="dp-val">${d.build_year>2100||d.build_year===0?'—':d.build_year}${d.build_country?' · '+d.build_country:''}</div></div>
+    <button class="dp-filter-btn"
+            onclick="document.getElementById('searchInput').value='${d.imo}';applyFilters()">
+      Filter by this vessel's IMO →
+    </button>
+  `;
+  document.getElementById('detailPanel').classList.add('open');
+  render();
+}
+
+function closeDetail(){
+  document.getElementById('detailPanel').classList.remove('open');
+  selData = null; render();
+}
+
+function setFilter(k, v, btn){
+  filters[k] = v;
+  if(btn){
+    btn.parentElement.querySelectorAll('.btn-f')
+       .forEach(b => b.classList.remove('active','active-red'));
+    btn.classList.add(v==='iran' ? 'active-red' : 'active');
+  }
+  render();
+}
+
+function toggleCargo(c){ filters.cargo=(filters.cargo===c)?'all':c; render(); }
+
+function setSort(k, btn){
+  if(sortKey===k) sortDir*=-1; else{sortKey=k;sortDir=-1;}
+  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  render();
+}
+
+function applyFilters(){ render(); }
+render();
+</script>
+</body></html>
