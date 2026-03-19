@@ -438,10 +438,6 @@ function showDetail(d){
   ` : '';
 
   document.getElementById('dp-body').innerHTML = `
-    ${d.iran?`<div class="iran-alert">
-      <div class="at">⚑ Iran-Flagged Vessel</div>
-      <div class="ab">Sanctions risk — monitor for potential disruption linkage.</div>
-    </div>`:''}
     <div class="dp-section-title">Crossing</div>
     <div class="dp-row"><div class="dp-key">Date</div><div class="dp-val blue">${d.date_display}</div></div>
     <div class="dp-row"><div class="dp-key">Direction</div><div class="dp-val">${out?'↗ Outbound':'↙ Inbound'}</div></div>
