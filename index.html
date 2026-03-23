@@ -147,7 +147,7 @@
       </div>
       <div>
         <div class="brand-name">Strait of Hormuz — Vessel Crossings</div>
-        <div class="brand-sub">Kpler AIS · 23 Mar 2026 08:37 UTC · Snapshot: 2026-03-23 04:00:00</div>
+        <div class="brand-sub">Kpler AIS · 23 Mar 2026 08:47 UTC · Snapshot: 2026-03-23 04:00:00</div>
       </div>
     </div>
   </div>
@@ -227,18 +227,18 @@
         <thead>
           <tr id="thead-row">
             <th data-sort="vessel" onclick="setSort('vessel')">Vessel<span class="sort-arrow"></span></th>
-            <th data-sort="date"   onclick="setSort('date')">Date<span class="sort-arrow"> ↓</span></th>
+            <th data-sort="date"   onclick="setSort('date')">Date<span class="sort-arrow"></span></th>
             <th data-sort="dir"    onclick="setSort('dir')">Direction<span class="sort-arrow"></span></th>
             <th>Cargo</th>
             <th data-sort="load"   onclick="setSort('load')">Loading<span class="sort-arrow"></span></th>
             <th id="th-owner" style="display:none" class="lpg-col" data-sort="owner" onclick="setSort('owner')">Owner<span class="sort-arrow"></span></th>
             <th data-sort="flag"   onclick="setSort('flag')">Flag<span class="sort-arrow"></span></th>
-            <th id="th-class" style="display:none" class="lpg-col">Class</th>
-            <th data-sort="type"   onclick="setSort('type')" class="hide-sm">Type<span class="sort-arrow"></span></th>
-            <th id="th-orig-c"  style="display:none" class="lpg-col hide-md">Origin Country</th>
-            <th id="th-orig-i"  style="display:none" class="lpg-col hide-md">Origin Installation</th>
-            <th id="th-dest-c"  style="display:none" class="lpg-col hide-md">Dest Country</th>
-            <th id="th-dest-i"  style="display:none" class="lpg-col hide-md">Dest Installation</th>
+            <th id="th-class" style="display:none" class="lpg-col" data-sort="class" onclick="setSort('class')">Class<span class="sort-arrow"></span></th>
+            <th class="hide-sm">Type</th>
+            <th id="th-orig-c" style="display:none" class="lpg-col hide-md" data-sort="orig_c" onclick="setSort('orig_c')">Origin Country<span class="sort-arrow"></span></th>
+            <th id="th-orig-i" style="display:none" class="lpg-col hide-md" data-sort="orig_i" onclick="setSort('orig_i')">Origin Installation<span class="sort-arrow"></span></th>
+            <th id="th-dest-c" style="display:none" class="lpg-col hide-md" data-sort="dest_c" onclick="setSort('dest_c')">Dest Country<span class="sort-arrow"></span></th>
+            <th id="th-dest-i" style="display:none" class="lpg-col hide-md" data-sort="dest_i" onclick="setSort('dest_i')">Dest Installation<span class="sort-arrow"></span></th>
           </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -337,7 +337,11 @@ function getSorted(arr){
     else if(sortKey==='dir')   { av=a.direction;                 bv=b.direction; }
     else if(sortKey==='owner') { av=(a.owner||'').toLowerCase(); bv=(b.owner||'').toLowerCase(); }
     else if(sortKey==='load')  { av=a.loading;                   bv=b.loading; }
-    else if(sortKey==='type')  { av=a.type;                      bv=b.type; }
+    else if(sortKey==='class')  { av=(a.vessel_class||'').toLowerCase();   bv=(b.vessel_class||'').toLowerCase(); }
+    else if(sortKey==='orig_c') { av=(a.origin_country||'').toLowerCase(); bv=(b.origin_country||'').toLowerCase(); }
+    else if(sortKey==='orig_i') { av=(a.origin_install||'').toLowerCase(); bv=(b.origin_install||'').toLowerCase(); }
+    else if(sortKey==='dest_c') { av=(a.dest_country||'').toLowerCase();   bv=(b.dest_country||'').toLowerCase(); }
+    else if(sortKey==='dest_i') { av=(a.dest_install||'').toLowerCase();   bv=(b.dest_install||'').toLowerCase(); }
     if(av < bv) return  sortDir;
     if(av > bv) return -sortDir;
     return 0;
